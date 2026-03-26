@@ -3,8 +3,6 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { RootStackParamList, MainTabParamList } from './src/types/navigation';
-
-// Telas (Exemplos)
 import OnboardingScreen from './src/screens/OnboardingScreen/OnboardingScreen';
 import FeedScreen from './src/screens/FeedScreen/FeedScreen';
 import { theme } from './src/styles/theme';

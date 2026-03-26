@@ -29,7 +29,6 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
       style={styles.container}
     >
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Botão de Voltar */}
         <TouchableOpacity 
           style={styles.backButton} 
           onPress={() => navigation.goBack()}
@@ -87,7 +86,7 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
 
           <TouchableOpacity 
             style={styles.nextButton}
-            onPress={() => navigation.navigate('GoalSelection')} // Próximo passo no HTML
+            onPress={() => navigation.navigate('GoalSelection')}
           >
             <Text style={styles.nextButtonText}>Próximo</Text>
           </TouchableOpacity>

@@ -6,7 +6,7 @@ const { width } = Dimensions.get('window');
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA', // Um cinza quase branco para destacar os cards
+    backgroundColor: '#F8F9FA',
   },
   header: {
     flexDirection: 'row',
@@ -35,7 +35,6 @@ export const styles = StyleSheet.create({
     padding: 8,
     borderRadius: 12,
   },
-  // --- STORIES ---
   storiesBar: {
     paddingVertical: 15,
     backgroundColor: '#FFF',
@@ -51,7 +50,7 @@ export const styles = StyleSheet.create({
     height: 66,
     borderRadius: 33,
     padding: 2.5,
-    backgroundColor: theme.colors.primary, // Simula a borda colorida
+    backgroundColor: theme.colors.primary,
     marginBottom: 6,
   },
   storyInnerBorder: {
@@ -69,14 +68,12 @@ export const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#333',
   },
-  // --- POST CARD ---
   postCard: {
     backgroundColor: '#FFF',
     marginBottom: 12,
-    borderRadius: 20, // Cards arredondados ficam mais modernos
+    borderRadius: 20,
     marginHorizontal: 10,
     overflow: 'hidden',
-    // Sombra para o Card
     elevation: 3,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },

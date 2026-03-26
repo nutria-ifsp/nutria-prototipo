@@ -26,7 +26,6 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
       style={styles.container}
     >
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Logo superior conforme o Protótipo */}
         <Image 
           source={{ uri: 'https://i.imgur.com/pPL5jeX.png' }} 
           style={styles.logo} 
@@ -37,7 +36,6 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
           <Text style={styles.title}>Entrar</Text>
           <Text style={styles.subtitle}>Bem-vindo de volta ao Nutria!</Text>
 
-          {/* Campo de Email */}
           <Text style={styles.label}>E-mail</Text>
           <TextInput
             style={styles.input}
@@ -48,7 +46,6 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
             autoCapitalize="none"
           />
 
-          {/* Campo de Senha */}
           <Text style={styles.label}>Senha</Text>
           <TextInput
             style={styles.input}
@@ -62,7 +59,6 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
             <Text style={styles.forgotPassText}>Esqueceu a senha?</Text>
           </TouchableOpacity>
 
-          {/* Botão de Entrar */}
           <TouchableOpacity 
             style={styles.loginButton}
             onPress={() => navigation.navigate('MainTabs')}
@@ -70,7 +66,6 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
             <Text style={styles.loginButtonText}>Entrar</Text>
           </TouchableOpacity>
 
-          {/* Link para Registro */}
           <View style={styles.registerContainer}>
             <Text style={styles.noAccountText}>Não tem uma conta? </Text>
             <TouchableOpacity onPress={() => navigation.navigate('Register')}>
