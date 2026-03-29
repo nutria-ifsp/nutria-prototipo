@@ -46,7 +46,7 @@ namespace NutriaAPI.Controllers
                 .Select(f => f.FollowingId)
                 .ToListAsync();
 
-            followedUserIds.Add(userId); // Include own posts
+            followedUserIds.Add(userId!.Value); // Include own posts
 
             // Get posts from followed users, ordered by newest first
             var totalCount = await _context.Posts
@@ -183,7 +183,7 @@ namespace NutriaAPI.Controllers
 
             var post = new Post
             {
-                UserId = userId,
+                UserId = userId!.Value,
                 Caption = request.Caption,
                 ImageUrl = request.ImageUrl,
                 CreatedAt = DateTime.UtcNow

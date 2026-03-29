@@ -1,8 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, Image, FlatList, TouchableOpacity, ScrollView, ImageBackground, Modal, Animated, Easing, Pressable } from 'react-native';
+import { View, Text, Image, FlatList, TouchableOpacity, ScrollView, ImageBackground, Modal, Animated, Easing, Pressable, ActivityIndicator, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../../styles/theme';
 import { styles } from './FeedScreen.styles';
+import * as api from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 
 const STORIES = [
   { id: '1', username: 'Seu Perfil', image: 'https://i.imgur.com/lOsEl90.png', isMe: true },
@@ -30,43 +32,16 @@ type FeedPost = {
   caption: string;
   isLiked: boolean;
   comments: PostComment[];
+  userId: number;
+  likesCount: number;
+  commentsCount: number;
 };
 
 const FeedScreen: React.FC = () => {
-  const [posts] = useState<FeedPost[]>([
-    {
-      id: '1',
-      username: 'NutriaUser',
-      userImage: 'https://i.imgur.com/lOsEl90.png',
-      postImage: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80',
-      streak: 5,
-      likes: 124,
-      caption: 'Almoço focado no objetivo de hoje! Muita cor e proteína. 🥗🍗',
-      isLiked: false,
-      comments: [
-        { id: '1', username: 'ana.nutri', text: 'Esse prato ficou lindo e completo!' },
-        { id: '2', username: 'joao.fit', text: 'Boa! Proteina no ponto.' },
-        { id: '3', username: 'carla.saude', text: 'Quero essa receita para hoje.' },
-        { id: '4', username: 'carla.saude', text: 'Quero essa receita para hoje.' },
-        { id: '5', username: 'carla.saude', text: 'Quero essa receita para hoje.' },
-      ],
-    },
-    {
-      id: '2',
-      username: 'ana.nutri',
-      userImage: 'https://randomuser.me/api/portraits/women/44.jpg',
-      postImage: 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=800&q=80',
-      streak: 12,
-      likes: 850,
-      caption: 'Dica do dia: preparem seus lanches na noite anterior! 🍎🥜',
-      isLiked: true,
-      comments: [
-        { id: '1', username: 'nutria.user', text: 'Dica de ouro para a semana.' },
-        { id: '2', username: 'marilia', text: 'Ja faco isso e ajuda muito mesmo.' },
-      ],
-    }
-  ]);
-
+  const { user } = useAuth();
+  const [posts, setPosts] = useState<FeedPost[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [selectedPost, setSelectedPost] = useState<FeedPost | null>(null);
   const [isCommentsVisible, setIsCommentsVisible] = useState(false);
   const modalProgress = useRef(new Animated.Value(0)).current;
@@ -81,6 +56,93 @@ const FeedScreen: React.FC = () => {
     inputRange: [0, 1],
     outputRange: [36, 0],
   });
+
+  // Load feed on mount
+  useEffect(() => {
+    loadFeed();
+  }, []);
+
+  const loadFeed = async () => {
+    try {
+      setLoading(true);
+      const response = await api.getFeed(1, 10);
+      
+      // Convert API response to FeedPost format
+      const convertedPosts: FeedPost[] = response.posts.map((post: any) => ({
+        id: post.id.toString(),
+        username: post.user?.username || 'Unknown',
+        userImage: post.user?.profile?.avatarUrl || 'https://randomuser.me/api/portraits/women/1.jpg',
+        postImage: post.imageUrl,
+        streak: post.user?.profile?.streak || 0,
+        likes: post.likesCount,
+        caption: post.caption,
+        isLiked: false,
+        comments: [],
+        userId: post.userId,
+        likesCount: post.likesCount,
+        commentsCount: post.commentsCount,
+      }));
+      
+      setPosts(convertedPosts);
+    } catch (error) {
+      console.error('Failed to load feed:', error);
+      Alert.alert('Erro', 'Falha ao carregar o feed. Tente novamente.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadFeed();
+    setRefreshing(false);
+  };
+
+  const handleLike = async (postId: string) => {
+    try {
+      const post = posts.find(p => p.id === postId);
+      if (!post) return;
+
+      if (post.isLiked) {
+        await api.unlikePost(parseInt(postId));
+      } else {
+        await api.likePost(parseInt(postId));
+      }
+
+      // Update local state
+      setPosts(posts.map(p => 
+        p.id === postId 
+          ? { 
+              ...p, 
+              isLiked: !p.isLiked,
+              likes: p.isLiked ? p.likes - 1 : p.likes + 1,
+              likesCount: p.isLiked ? p.likesCount - 1 : p.likesCount + 1
+            }
+          : p
+      ));
+    } catch (error) {
+      console.error('Failed to like post:', error);
+      Alert.alert('Erro', 'Não foi possível curtir o post.');
+    }
+  };
+
+  const handleComment = async (postId: string, commentText: string) => {
+    try {
+      if (!commentText.trim()) {
+        Alert.alert('Erro', 'Digite um comentário');
+        return;
+      }
+
+      await api.addComment(parseInt(postId), commentText);
+      
+      // Reload feed to get updated comments
+      await loadFeed();
+      closeComments();
+    } catch (error) {
+      console.error('Failed to add comment:', error);
+      Alert.alert('Erro', 'Não foi possível adicionar o comentário.');
+    }
+  };
 
   const runModalAnimation = (toValue: 0 | 1, onFinished?: () => void) => {
     currentAnimation.current?.stop();
@@ -132,6 +194,14 @@ const FeedScreen: React.FC = () => {
     };
   }, []);
 
+  if (loading) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -149,6 +219,13 @@ const FeedScreen: React.FC = () => {
       <FlatList
         data={posts}
         keyExtractor={(item) => item.id}
+        onRefresh={onRefresh}
+        refreshing={refreshing}
+        ListEmptyComponent={
+          <View style={{ justifyContent: 'center', alignItems: 'center', paddingTop: 40 }}>
+            <Text style={{ color: theme.colors.textSubtitle }}>Nenhum post ainda. Comece a seguir pessoas!</Text>
+          </View>
+        }
         ListHeaderComponent={() => (
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.storiesBar}>
             {STORIES.map(story => (
@@ -179,7 +256,7 @@ const FeedScreen: React.FC = () => {
 
             <View style={styles.postFooter}>
               <View style={styles.interactions}>
-                <TouchableOpacity>
+                <TouchableOpacity onPress={() => handleLike(item.id)}>
                   <Ionicons name={item.isLiked ? "heart" : "heart-outline"} size={28} color={item.isLiked ? theme.colors.danger : "#333"} />
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => openComments(item)}>
@@ -190,20 +267,16 @@ const FeedScreen: React.FC = () => {
                 </TouchableOpacity>
               </View>
 
-              <Text style={styles.likesCount}>{item.likes} curtidas</Text>
+              <Text style={styles.likesCount}>{item.likesCount} curtidas</Text>
               <Text style={styles.caption}>
                 <Text style={styles.username}>{item.username} </Text>
                 {item.caption}
               </Text>
-              {item.comments.length > 0 && (
-                <Text style={styles.commentPreview}>
-                  <Text style={styles.commentPreviewUser}>{item.comments[0].username} </Text>
-                  {item.comments[0].text}
-                </Text>
+              {item.commentsCount > 0 && (
+                <TouchableOpacity onPress={() => openComments(item)}>
+                  <Text style={styles.addComment}>Ver todos os {item.commentsCount} comentarios</Text>
+                </TouchableOpacity>
               )}
-              <TouchableOpacity onPress={() => openComments(item)}>
-                <Text style={styles.addComment}>Ver todos os {item.comments.length} comentarios</Text>
-              </TouchableOpacity>
             </View>
           </View>
         )}
@@ -228,12 +301,16 @@ const FeedScreen: React.FC = () => {
               </TouchableOpacity>
             </View>
 
-            {selectedPost?.comments.map((comment) => (
-              <View key={comment.id} style={styles.commentItem}>
-                <Text style={styles.commentUser}>{comment.username}</Text>
-                <Text style={styles.commentText}>{comment.text}</Text>
-              </View>
-            ))}
+            {selectedPost?.comments && selectedPost.comments.length > 0 ? (
+              selectedPost.comments.map((comment) => (
+                <View key={comment.id} style={styles.commentItem}>
+                  <Text style={styles.commentUser}>{comment.username}</Text>
+                  <Text style={styles.commentText}>{comment.text}</Text>
+                </View>
+              ))
+            ) : (
+              <Text style={{ padding: 16, color: theme.colors.textSubtitle }}>Nenhum comentário ainda</Text>
+            )}
           </Animated.View>
         </View>
       </Modal>

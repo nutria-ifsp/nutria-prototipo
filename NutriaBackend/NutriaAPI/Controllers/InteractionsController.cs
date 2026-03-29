@@ -55,7 +55,7 @@ namespace NutriaAPI.Controllers
             // Create like
             var like = new Like
             {
-                UserId = userId,
+                UserId = userId!.Value,
                 PostId = postId,
                 CreatedAt = DateTime.UtcNow
             };
@@ -87,7 +87,7 @@ namespace NutriaAPI.Controllers
             }
 
             var like = await _context.Likes
-                .FirstOrDefaultAsync(l => l.UserId == userId && l.PostId == postId);
+                .FirstOrDefaultAsync(l => l.UserId == userId!.Value && l.PostId == postId);
 
             if (like == null)
             {
@@ -206,7 +206,7 @@ namespace NutriaAPI.Controllers
 
             var comment = new Comment
             {
-                UserId = userId,
+                UserId = userId!.Value,
                 PostId = postId,
                 Text = request.Text,
                 CreatedAt = DateTime.UtcNow

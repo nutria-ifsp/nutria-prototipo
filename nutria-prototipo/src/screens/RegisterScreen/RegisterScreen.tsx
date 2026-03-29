@@ -8,20 +8,64 @@ import {
   Image, 
   KeyboardAvoidingView, 
   Platform, 
-  ScrollView 
+  ScrollView,
+  ActivityIndicator,
+  Alert
 } from 'react-native';
 import { StackScreenProps } from '@react-navigation/stack';
 import { RootStackParamList } from '../../types/navigation';
 import { theme } from '../../styles/theme';
 import { Ionicons } from '@expo/vector-icons';
+import { useAuth } from '../../context/AuthContext';
 
 type Props = StackScreenProps<RootStackParamList, 'Register'>;
 
 const RegisterScreen: React.FC<Props> = ({ navigation }) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState('');
+  const { register, loading } = useAuth();
+
+  const handleRegister = async () => {
+    try {
+      // Validation
+      if (!name.trim()) {
+        setError('Por favor, insira seu nome');
+        return;
+      }
+      if (!email.trim()) {
+        setError('Por favor, insira seu e-mail');
+        return;
+      }
+      if (!username.trim()) {
+        setError('Por favor, insira um nome de usuário');
+        return;
+      }
+      if (!password.trim()) {
+        setError('Por favor, insira uma senha');
+        return;
+      }
+      if (password.length < 6) {
+        setError('A senha deve ter no mínimo 6 caracteres');
+        return;
+      }
+      if (password !== confirmPassword) {
+        setError('As senhas não conferem');
+        return;
+      }
+
+      setError('');
+      await register(email, password, username, name);
+      // Navigation happens automatically via AuthContext
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Erro ao registrar';
+      setError(errorMessage);
+      Alert.alert('Erro de Registro', errorMessage);
+    }
+  };
 
   return (
     <KeyboardAvoidingView 
@@ -32,6 +76,7 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
         <TouchableOpacity 
           style={styles.backButton} 
           onPress={() => navigation.goBack()}
+          disabled={loading}
         >
           <Ionicons name="arrow-back" size={24} color={theme.colors.textStrong} />
         </TouchableOpacity>
@@ -47,13 +92,23 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
           <Text style={styles.subtitle}>Comece sua jornada saudável hoje.</Text>
         </View>
 
+        {error && (
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>{error}</Text>
+          </View>
+        )}
+
         <View style={styles.form}>
           <Text style={styles.label}>Nome Completo</Text>
           <TextInput
             style={styles.input}
             placeholder="Digite seu nome"
             value={name}
-            onChangeText={setName}
+            onChangeText={(text) => {
+              setName(text);
+              setError('');
+            }}
+            editable={!loading}
           />
 
           <Text style={styles.label}>E-mail</Text>
@@ -61,9 +116,26 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
             style={styles.input}
             placeholder="seu@email.com"
             value={email}
-            onChangeText={setEmail}
+            onChangeText={(text) => {
+              setEmail(text);
+              setError('');
+            }}
             keyboardType="email-address"
             autoCapitalize="none"
+            editable={!loading}
+          />
+
+          <Text style={styles.label}>Nome de Usuário</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="seu_usuario"
+            value={username}
+            onChangeText={(text) => {
+              setUsername(text.replace(/\s/g, ''));
+              setError('');
+            }}
+            autoCapitalize="none"
+            editable={!loading}
           />
 
           <Text style={styles.label}>Senha</Text>
@@ -71,8 +143,12 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
             style={styles.input}
             placeholder="Mínimo 6 caracteres"
             value={password}
-            onChangeText={setPassword}
+            onChangeText={(text) => {
+              setPassword(text);
+              setError('');
+            }}
             secureTextEntry
+            editable={!loading}
           />
 
           <Text style={styles.label}>Confirmar Senha</Text>
@@ -80,21 +156,31 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
             style={styles.input}
             placeholder="Repita a senha"
             value={confirmPassword}
-            onChangeText={setConfirmPassword}
+            onChangeText={(text) => {
+              setConfirmPassword(text);
+              setError('');
+            }}
             secureTextEntry
+            editable={!loading}
           />
 
           <TouchableOpacity 
-            style={styles.nextButton}
-            onPress={() => navigation.navigate('GoalSelection')}
+            style={[styles.nextButton, { opacity: loading ? 0.6 : 1 }]}
+            onPress={handleRegister}
+            disabled={loading}
           >
-            <Text style={styles.nextButtonText}>Próximo</Text>
+            {loading ? (
+              <ActivityIndicator color="#FFF" />
+            ) : (
+              <Text style={styles.nextButtonText}>Criar Conta</Text>
+            )}
           </TouchableOpacity>
         </View>
 
         <TouchableOpacity 
-          style={styles.loginLink} 
+          style={styles.loginLink}
           onPress={() => navigation.navigate('Login')}
+          disabled={loading}
         >
           <Text style={styles.loginLinkText}>
             Já tem uma conta? <Text style={{fontWeight: '700', color: theme.colors.primary}}>Entrar</Text>
@@ -139,6 +225,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: theme.colors.textSubtitle,
     marginTop: 5,
+  },
+  errorContainer: {
+    backgroundColor: '#ffebee',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 20,
+    borderLeftWidth: 4,
+    borderLeftColor: '#c62828',
+  },
+  errorText: {
+    color: '#c62828',
+    fontSize: 14,
   },
   form: {
     width: '100%',

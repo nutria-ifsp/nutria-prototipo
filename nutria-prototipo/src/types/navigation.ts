@@ -2,6 +2,7 @@ export type RootStackParamList = {
   Onboarding: undefined;
   Login: undefined;
   Register: undefined;
+  CreatePost: undefined;
   GoalSelection: undefined;
   CaloricData: undefined;
   Welcome: { username: string; tdee: number; target: number; goal: string };

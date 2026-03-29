@@ -8,17 +8,43 @@ import {
   Image, 
   KeyboardAvoidingView, 
   Platform,
-  ScrollView 
+  ScrollView,
+  ActivityIndicator,
+  Alert
 } from 'react-native';
 import { StackScreenProps } from '@react-navigation/stack';
 import { RootStackParamList } from '../../types/navigation';
 import { theme } from '../../styles/theme';
+import { useAuth } from '../../context/AuthContext';
 
 type Props = StackScreenProps<RootStackParamList, 'Login'>;
 
 const LoginScreen: React.FC<Props> = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const { login, loading } = useAuth();
+
+  const handleLogin = async () => {
+    try {
+      if (!email.trim()) {
+        setError('Por favor, insira seu e-mail');
+        return;
+      }
+      if (!password.trim()) {
+        setError('Por favor, insira sua senha');
+        return;
+      }
+
+      setError('');
+      await login(email, password);
+      // Navigation happens automatically via AuthContext
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Erro ao fazer login';
+      setError(errorMessage);
+      Alert.alert('Erro de Login', errorMessage);
+    }
+  };
 
   return (
     <KeyboardAvoidingView 
@@ -36,14 +62,24 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
           <Text style={styles.title}>Entrar</Text>
           <Text style={styles.subtitle}>Bem-vindo de volta ao Nutria!</Text>
 
+          {error && (
+            <View style={styles.errorContainer}>
+              <Text style={styles.errorText}>{error}</Text>
+            </View>
+          )}
+
           <Text style={styles.label}>E-mail</Text>
           <TextInput
             style={styles.input}
             placeholder="exemplo@email.com"
             value={email}
-            onChangeText={setEmail}
+            onChangeText={(text) => {
+              setEmail(text);
+              setError('');
+            }}
             keyboardType="email-address"
             autoCapitalize="none"
+            editable={!loading}
           />
 
           <Text style={styles.label}>Senha</Text>
@@ -51,24 +87,33 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
             style={styles.input}
             placeholder="Sua senha"
             value={password}
-            onChangeText={setPassword}
+            onChangeText={(text) => {
+              setPassword(text);
+              setError('');
+            }}
             secureTextEntry
+            editable={!loading}
           />
 
-          <TouchableOpacity style={styles.forgotPass}>
+          <TouchableOpacity style={styles.forgotPass} disabled={loading}>
             <Text style={styles.forgotPassText}>Esqueceu a senha?</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
-            style={styles.loginButton}
-            onPress={() => navigation.navigate('MainTabs')}
+            style={[styles.loginButton, { opacity: loading ? 0.6 : 1 }]}
+            onPress={handleLogin}
+            disabled={loading}
           >
-            <Text style={styles.loginButtonText}>Entrar</Text>
+            {loading ? (
+              <ActivityIndicator color="#FFF" />
+            ) : (
+              <Text style={styles.loginButtonText}>Entrar</Text>
+            )}
           </TouchableOpacity>
 
           <View style={styles.registerContainer}>
             <Text style={styles.noAccountText}>Não tem uma conta? </Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+            <TouchableOpacity onPress={() => navigation.navigate('Register')} disabled={loading}>
               <Text style={styles.registerLink}>Cadastre-se</Text>
             </TouchableOpacity>
           </View>
@@ -107,6 +152,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: theme.colors.textSubtitle,
     marginBottom: 32,
+  },
+  errorContainer: {
+    backgroundColor: '#ffebee',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 20,
+    borderLeftWidth: 4,
+    borderLeftColor: '#c62828',
+  },
+  errorText: {
+    color: '#c62828',
+    fontSize: 14,
   },
   label: {
     fontSize: 14,
@@ -150,7 +207,7 @@ const styles = StyleSheet.create({
   registerContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 25,
+    marginTop: 20,
   },
   noAccountText: {
     color: theme.colors.textSubtitle,

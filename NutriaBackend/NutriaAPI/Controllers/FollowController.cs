@@ -68,7 +68,7 @@ namespace NutriaAPI.Controllers
             // Create follow relationship
             var follow = new Follow
             {
-                FollowerId = currentUserId,
+                FollowerId = currentUserId!.Value,
                 FollowingId = userIdToFollow,
                 CreatedAt = DateTime.UtcNow
             };
