@@ -38,6 +38,7 @@ namespace NutriaAPI.Controllers
             return Ok(new ProfileDto
             {
                 Id = profile.Id,
+                Username = profile.User?.Username ?? username,
                 Name = profile.Name,
                 Bio = profile.Bio,
                 AvatarUrl = profile.AvatarUrl,
@@ -64,6 +65,7 @@ namespace NutriaAPI.Controllers
             }
 
             var profile = await _context.Profiles
+                .Include(p => p.User)
                 .FirstOrDefaultAsync(p => p.UserId == userId);
 
             if (profile == null)
@@ -74,6 +76,7 @@ namespace NutriaAPI.Controllers
             return Ok(new ProfileDto
             {
                 Id = profile.Id,
+                Username = profile.User?.Username ?? string.Empty,
                 Name = profile.Name,
                 Bio = profile.Bio,
                 AvatarUrl = profile.AvatarUrl,
@@ -101,11 +104,27 @@ namespace NutriaAPI.Controllers
             }
 
             var profile = await _context.Profiles
+                .Include(p => p.User)
                 .FirstOrDefaultAsync(p => p.UserId == userId);
 
             if (profile == null)
             {
                 return NotFound();
+            }
+
+            if (!string.IsNullOrWhiteSpace(request.Username) && profile.User != null)
+            {
+                var normalizedUsername = request.Username.Trim();
+                var usernameTaken = await _context.Users
+                    .AnyAsync(u => u.Username == normalizedUsername && u.Id != userId.Value);
+
+                if (usernameTaken)
+                {
+                    return BadRequest(new { message = "Username already in use" });
+                }
+
+                profile.User.Username = normalizedUsername;
+                profile.User.UpdatedAt = DateTime.UtcNow;
             }
 
             if (!string.IsNullOrWhiteSpace(request.Name))
@@ -131,6 +150,7 @@ namespace NutriaAPI.Controllers
             return Ok(new ProfileDto
             {
                 Id = profile.Id,
+                Username = profile.User?.Username ?? string.Empty,
                 Name = profile.Name,
                 Bio = profile.Bio,
                 AvatarUrl = profile.AvatarUrl,

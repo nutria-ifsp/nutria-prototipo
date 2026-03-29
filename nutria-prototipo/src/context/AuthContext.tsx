@@ -26,7 +26,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, username: string, name: string) => Promise<void>;
   logout: () => Promise<void>;
-  updateProfile: (updates: Partial<UserProfile>) => Promise<void>;
+  updateProfile: (updates: Partial<UserProfile> & { username?: string }) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -100,10 +100,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const updateProfile = async (updates: Partial<UserProfile>) => {
+  const updateProfile = async (updates: Partial<UserProfile> & { username?: string }) => {
     try {
-      const updated = await apiService.updateProfile(updates);
-      setUser(updated);
+      const updatedProfile = await apiService.updateProfile({
+        name: updates.name,
+        username: updates.username,
+        bio: updates.bio,
+        avatarUrl: updates.avatarUrl,
+      });
+
+      setUser((prev) => {
+        if (!prev) {
+          return prev;
+        }
+
+        return {
+          ...prev,
+          username: updatedProfile.username || prev.username,
+          profile: {
+            ...prev.profile,
+            ...updatedProfile,
+          },
+        };
+      });
     } catch (error) {
       console.error('Failed to update profile:', error);
       throw error;

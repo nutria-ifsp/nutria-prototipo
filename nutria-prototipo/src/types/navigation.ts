@@ -24,7 +24,7 @@ export type ProfileData = {
 };
 
 export type PerfilStackParamList = {
-  PerfilMain: { updatedProfile?: ProfileData } | undefined;
-  EditarPerfil: { profile: ProfileData };
+  PerfilMain: undefined;
+  EditarPerfil: undefined;
   Configuracoes: undefined;
 };

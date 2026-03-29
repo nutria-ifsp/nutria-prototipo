@@ -1,16 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, Image, TouchableOpacity, ScrollView, Modal, Animated, Easing, Pressable } from 'react-native';
+import { View, Text, Image, TouchableOpacity, ScrollView, Modal, Animated, Easing, Pressable, RefreshControl } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../../styles/theme';
 import { styles } from './PerfilScreen.styles';
 import { StackScreenProps } from '@react-navigation/stack';
-import { PerfilStackParamList, ProfileData } from '../../types/navigation';
-
-const METRICS = [
-  { id: '1', label: 'Seguidores', value: '1.2K' },
-  { id: '2', label: 'Seguindo', value: '340' },
-  { id: '3', label: 'Posts', value: '58' },
-];
+import { PerfilStackParamList } from '../../types/navigation';
+import { useAuth } from '../../context/AuthContext';
+import * as api from '../../services/api';
 
 const DAILY_GOALS = [
   { id: '1', title: 'Calorias', value: '1.850 / 2.100 kcal', progress: 0.88 },
@@ -60,17 +56,20 @@ const MY_POSTS: PerfilPost[] = [
 
 type Props = StackScreenProps<PerfilStackParamList, 'PerfilMain'>;
 
-const PerfilScreen: React.FC<Props> = ({ navigation, route }) => {
-  const [profile, setProfile] = useState<ProfileData>({
-    name: 'Nutria User',
-    username: '@nutriauser',
-    bio: 'Foco em recomposicao corporal e rotina sem extremismo.',
-    image: 'https://i.imgur.com/lOsEl90.png',
-  });
+const PerfilScreen: React.FC<Props> = ({ navigation }) => {
+  const { user } = useAuth();
+  const [profile, setProfile] = useState(user?.profile ?? null);
+  const [refreshing, setRefreshing] = useState(false);
   const [selectedPost, setSelectedPost] = useState<PerfilPost | null>(null);
   const [isCommentsVisible, setIsCommentsVisible] = useState(false);
   const overlayOpacity = useRef(new Animated.Value(0)).current;
   const sheetTranslateY = useRef(new Animated.Value(36)).current;
+
+  const metrics = [
+    { id: '1', label: 'Seguidores', value: String(profile?.followersCount ?? 0) },
+    { id: '2', label: 'Seguindo', value: String(profile?.followingCount ?? 0) },
+    { id: '3', label: 'Posts', value: String(profile?.postsCount ?? 0) },
+  ];
 
   const openComments = (post: PerfilPost) => {
     setSelectedPost(post);
@@ -123,15 +122,27 @@ const PerfilScreen: React.FC<Props> = ({ navigation, route }) => {
   }, [isCommentsVisible, overlayOpacity, selectedPost, sheetTranslateY]);
 
   useEffect(() => {
-    const updatedProfile = route.params?.updatedProfile;
+    setProfile(user?.profile ?? null);
+  }, [user]);
 
-    if (!updatedProfile) {
-      return;
+  const loadProfile = async () => {
+    try {
+      const freshProfile = await api.getProfile();
+      setProfile(freshProfile);
+    } catch (error) {
+      console.error('Failed to load profile:', error);
     }
+  };
 
-    setProfile(updatedProfile);
-    navigation.setParams({ updatedProfile: undefined });
-  }, [navigation, route.params?.updatedProfile]);
+  useEffect(() => {
+    loadProfile();
+  }, []);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadProfile();
+    setRefreshing(false);
+  };
 
   return (
     <View style={styles.container}>
@@ -142,23 +153,24 @@ const PerfilScreen: React.FC<Props> = ({ navigation, route }) => {
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.primary} />}
       >
         <View style={styles.profileCard}>
           <Image
-            source={{ uri: profile.image }}
+            source={{ uri: profile?.avatarUrl || 'https://i.imgur.com/lOsEl90.png' }}
             style={styles.avatar}
           />
           <View style={styles.profileInfo}>
-            <Text style={styles.name}>{profile.name}</Text>
-            <Text style={styles.handle}>{profile.username}</Text>
+            <Text style={styles.name}>{profile?.name || user?.username || 'Usuario'}</Text>
+            <Text style={styles.handle}>@{user?.username || 'nutriauser'}</Text>
             <Text style={styles.bio}>
-              {profile.bio}
+              {profile?.bio || 'Sem bio ainda.'}
             </Text>
           </View>
         </View>
 
         <View style={styles.metricsRow}>
-          {METRICS.map((metric) => (
+          {metrics.map((metric) => (
             <View key={metric.id} style={styles.metricCard}>
               <Text style={styles.metricValue}>{metric.value}</Text>
               <Text style={styles.metricLabel}>{metric.label}</Text>
@@ -197,7 +209,7 @@ const PerfilScreen: React.FC<Props> = ({ navigation, route }) => {
 
           <TouchableOpacity
             style={styles.actionRow}
-            onPress={() => navigation.navigate('EditarPerfil', { profile })}
+            onPress={() => navigation.navigate('EditarPerfil')}
           >
             <Ionicons name="create-outline" size={20} color={theme.colors.textStrong} />
             <Text style={styles.actionText}>Editar perfil</Text>

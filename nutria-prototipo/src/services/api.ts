@@ -58,6 +58,18 @@ export interface UserDto {
   };
 }
 
+export interface ProfileDto {
+  id: number;
+  username: string;
+  name: string;
+  bio: string;
+  avatarUrl?: string;
+  followersCount: number;
+  followingCount: number;
+  postsCount: number;
+  streak: number;
+}
+
 export interface PostDto {
   id: number;
   userId: number;
@@ -253,8 +265,8 @@ export async function unfollowUser(userId: number): Promise<{ message: string }>
 /**
  * Get user's profile
  */
-export async function getProfile(): Promise<UserDto> {
-  return request<UserDto>('/profile', 'GET');
+export async function getProfile(): Promise<ProfileDto> {
+  return request<ProfileDto>('/profile/me', 'GET');
 }
 
 /**
@@ -262,10 +274,11 @@ export async function getProfile(): Promise<UserDto> {
  */
 export async function updateProfile(data: {
   name?: string;
+  username?: string;
   bio?: string;
   avatarUrl?: string;
-}): Promise<UserDto> {
-  return request<UserDto>('/profile', 'PUT', data);
+}): Promise<ProfileDto> {
+  return request<ProfileDto>('/profile/me', 'PUT', data);
 }
 
 export default {

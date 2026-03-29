@@ -6,14 +6,17 @@ import { StackScreenProps } from '@react-navigation/stack';
 import { theme } from '../../styles/theme';
 import { PerfilStackParamList } from '../../types/navigation';
 import { styles } from './EditarPerfilScreen.styles';
+import { useAuth } from '../../context/AuthContext';
 
 type Props = StackScreenProps<PerfilStackParamList, 'EditarPerfil'>;
 
-const EditarPerfilScreen: React.FC<Props> = ({ navigation, route }) => {
-  const [profileImage, setProfileImage] = useState(route.params.profile.image);
-  const [name, setName] = useState(route.params.profile.name);
-  const [username, setUsername] = useState(route.params.profile.username);
-  const [bio, setBio] = useState(route.params.profile.bio);
+const EditarPerfilScreen: React.FC<Props> = ({ navigation }) => {
+  const { user, updateProfile } = useAuth();
+  const [profileImage, setProfileImage] = useState(user?.profile?.avatarUrl || 'https://i.imgur.com/lOsEl90.png');
+  const [name, setName] = useState(user?.profile?.name || '');
+  const [username, setUsername] = useState(user?.username || '');
+  const [bio, setBio] = useState(user?.profile?.bio || '');
+  const [saving, setSaving] = useState(false);
 
   const requestMediaPermission = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -73,32 +76,41 @@ const EditarPerfilScreen: React.FC<Props> = ({ navigation, route }) => {
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!name.trim()) {
       Alert.alert('Nome invalido', 'Digite um nome para salvar o perfil.');
       return;
     }
 
-    if (!username.trim()) {
+    const normalizedUsername = username.trim().replace(/^@+/, '');
+    if (!normalizedUsername) {
       Alert.alert('Usuario invalido', 'Digite um nome de usuario.');
       return;
     }
 
-    navigation.navigate('PerfilMain', {
-      updatedProfile: {
+    try {
+      setSaving(true);
+      await updateProfile({
         name: name.trim(),
-        username: username.trim(),
+        username: normalizedUsername,
         bio: bio.trim(),
-        image: profileImage,
-      },
-    });
-    Alert.alert('Perfil atualizado', 'Suas alteracoes foram salvas com sucesso.');
+        avatarUrl: profileImage,
+      });
+
+      Alert.alert('Perfil atualizado', 'Suas alteracoes foram salvas com sucesso.');
+      navigation.goBack();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Falha ao salvar alteracoes.';
+      Alert.alert('Erro', message);
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity style={styles.headerButton} onPress={() => navigation.goBack()}>
+        <TouchableOpacity style={styles.headerButton} onPress={() => navigation.goBack()} disabled={saving}>
           <Ionicons name="chevron-back" size={22} color={theme.colors.textStrong} />
         </TouchableOpacity>
 
@@ -117,12 +129,12 @@ const EditarPerfilScreen: React.FC<Props> = ({ navigation, route }) => {
           </View>
 
           <View style={styles.photoButtonsRow}>
-            <TouchableOpacity style={styles.photoButton} onPress={pickImageFromGallery}>
+            <TouchableOpacity style={styles.photoButton} onPress={pickImageFromGallery} disabled={saving}>
               <Ionicons name="images-outline" size={17} color="#3B3E45" />
               <Text style={styles.photoButtonText}>Escolher da galeria</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.photoButton} onPress={takePicture}>
+            <TouchableOpacity style={styles.photoButton} onPress={takePicture} disabled={saving}>
               <Ionicons name="camera-outline" size={17} color="#3B3E45" />
               <Text style={styles.photoButtonText}>Tirar foto</Text>
             </TouchableOpacity>
@@ -138,6 +150,7 @@ const EditarPerfilScreen: React.FC<Props> = ({ navigation, route }) => {
               onChangeText={setName}
               placeholder="Seu nome"
               placeholderTextColor="#A0A4AD"
+              editable={!saving}
             />
           </View>
 
@@ -150,6 +163,7 @@ const EditarPerfilScreen: React.FC<Props> = ({ navigation, route }) => {
               placeholder="@seuusuario"
               placeholderTextColor="#A0A4AD"
               autoCapitalize="none"
+              editable={!saving}
             />
           </View>
 
@@ -163,14 +177,15 @@ const EditarPerfilScreen: React.FC<Props> = ({ navigation, route }) => {
               placeholderTextColor="#A0A4AD"
               multiline
               maxLength={180}
+              editable={!saving}
             />
             <Text style={styles.helperText}>{bio.length}/180</Text>
           </View>
         </View>
 
-        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+        <TouchableOpacity style={[styles.saveButton, { opacity: saving ? 0.7 : 1 }]} onPress={handleSave} disabled={saving}>
           <Ionicons name="save-outline" size={18} color="#FFFFFF" />
-          <Text style={styles.saveButtonText}>Salvar alteracoes</Text>
+          <Text style={styles.saveButtonText}>{saving ? 'Salvando...' : 'Salvar alteracoes'}</Text>
         </TouchableOpacity>
       </ScrollView>
     </View>
