@@ -1,10 +1,13 @@
 import { StyleSheet } from 'react-native';
-import { theme } from '../../styles/theme';
+import { darkTheme, lightTheme } from '../../styles/theme';
 
-export const styles = StyleSheet.create({
+type AppTheme = typeof lightTheme | typeof darkTheme;
+
+export const createStyles = (theme: AppTheme) =>
+  StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F7F8FA',
+    backgroundColor: theme.colors.background,
   },
   header: {
     flexDirection: 'row',
@@ -13,9 +16,9 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 56,
     paddingBottom: 14,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.card,
     borderBottomWidth: 1,
-    borderBottomColor: '#ECEEF2',
+    borderBottomColor: theme.colors.border,
   },
   headerButton: {
     width: 36,
@@ -23,7 +26,7 @@ export const styles = StyleSheet.create({
     borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#F1F3F6',
+    backgroundColor: theme.colors.iconSurface,
   },
   headerTitle: {
     fontSize: 18,
@@ -36,11 +39,11 @@ export const styles = StyleSheet.create({
     gap: 14,
   },
   card: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: theme.colors.card,
     borderRadius: 18,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#ECEEF2',
+    borderColor: theme.colors.border,
   },
   avatarWrapper: {
     alignItems: 'center',
@@ -50,7 +53,7 @@ export const styles = StyleSheet.create({
     width: 96,
     height: 96,
     borderRadius: 48,
-    backgroundColor: '#E7EAF0',
+    backgroundColor: theme.colors.lightGray,
   },
   avatarEditBadge: {
     position: 'absolute',
@@ -63,7 +66,7 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    borderColor: '#FFFFFF',
+    borderColor: theme.colors.card,
   },
   photoButtonsRow: {
     flexDirection: 'row',
@@ -74,15 +77,15 @@ export const styles = StyleSheet.create({
     minHeight: 44,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#DCE0E7',
+    borderColor: theme.colors.border,
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
     gap: 8,
-    backgroundColor: '#FCFCFD',
+    backgroundColor: theme.colors.mutedBackground,
   },
   photoButtonText: {
-    color: '#3B3E45',
+    color: theme.colors.textStrong,
     fontWeight: '600',
     fontSize: 13,
   },
@@ -90,7 +93,7 @@ export const styles = StyleSheet.create({
     marginTop: 12,
   },
   fieldLabel: {
-    color: '#5B5E66',
+    color: theme.colors.textSubtitle,
     fontSize: 13,
     marginBottom: 6,
     fontWeight: '600',
@@ -98,11 +101,11 @@ export const styles = StyleSheet.create({
   input: {
     minHeight: 46,
     borderWidth: 1,
-    borderColor: '#DCE0E7',
+    borderColor: theme.colors.border,
     borderRadius: 12,
     paddingHorizontal: 12,
-    color: '#202328',
-    backgroundColor: '#FFFFFF',
+    color: theme.colors.textStrong,
+    backgroundColor: theme.colors.card,
   },
   textArea: {
     minHeight: 92,
@@ -111,7 +114,7 @@ export const styles = StyleSheet.create({
   },
   helperText: {
     marginTop: 6,
-    color: '#7A7F8A',
+    color: theme.colors.textSubtitle,
     fontSize: 12,
   },
   saveButton: {

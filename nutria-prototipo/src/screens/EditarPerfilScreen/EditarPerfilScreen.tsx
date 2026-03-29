@@ -3,14 +3,16 @@ import { Alert, Image, ScrollView, Text, TextInput, TouchableOpacity, View } fro
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { StackScreenProps } from '@react-navigation/stack';
-import { theme } from '../../styles/theme';
 import { PerfilStackParamList } from '../../types/navigation';
-import { styles } from './EditarPerfilScreen.styles';
+import { createStyles } from './EditarPerfilScreen.styles';
 import { useAuth } from '../../context/AuthContext';
+import { useSettings } from '../../context/SettingsContext';
 
 type Props = StackScreenProps<PerfilStackParamList, 'EditarPerfil'>;
 
 const EditarPerfilScreen: React.FC<Props> = ({ navigation }) => {
+  const { theme } = useSettings();
+  const styles = createStyles(theme);
   const { user, updateProfile } = useAuth();
   const [profileImage, setProfileImage] = useState(user?.profile?.avatarUrl || 'https://i.imgur.com/lOsEl90.png');
   const [name, setName] = useState(user?.profile?.name || '');
@@ -130,12 +132,12 @@ const EditarPerfilScreen: React.FC<Props> = ({ navigation }) => {
 
           <View style={styles.photoButtonsRow}>
             <TouchableOpacity style={styles.photoButton} onPress={pickImageFromGallery} disabled={saving}>
-              <Ionicons name="images-outline" size={17} color="#3B3E45" />
+              <Ionicons name="images-outline" size={17} color={theme.colors.textStrong} />
               <Text style={styles.photoButtonText}>Escolher da galeria</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.photoButton} onPress={takePicture} disabled={saving}>
-              <Ionicons name="camera-outline" size={17} color="#3B3E45" />
+              <Ionicons name="camera-outline" size={17} color={theme.colors.textStrong} />
               <Text style={styles.photoButtonText}>Tirar foto</Text>
             </TouchableOpacity>
           </View>
