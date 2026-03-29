@@ -37,7 +37,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
       }
 
       setError('');
-      await login(email, password);
+      await login(email.trim(), password);
       // Navigation happens automatically via AuthContext
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro ao fazer login';

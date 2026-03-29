@@ -1,12 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, Image, TouchableOpacity, ScrollView, Modal, Animated, Easing, Pressable, RefreshControl } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { theme } from '../../styles/theme';
-import { styles } from './PerfilScreen.styles';
+import { createStyles } from './PerfilScreen.styles';
 import { StackScreenProps } from '@react-navigation/stack';
 import { PerfilStackParamList } from '../../types/navigation';
 import { useAuth } from '../../context/AuthContext';
 import * as api from '../../services/api';
+import { useSettings } from '../../context/SettingsContext';
 
 const DAILY_GOALS = [
   { id: '1', title: 'Calorias', value: '1.850 / 2.100 kcal', progress: 0.88 },
@@ -58,6 +58,8 @@ type Props = StackScreenProps<PerfilStackParamList, 'PerfilMain'>;
 
 const PerfilScreen: React.FC<Props> = ({ navigation }) => {
   const { user } = useAuth();
+  const { theme } = useSettings();
+  const styles = createStyles(theme);
   const [profile, setProfile] = useState(user?.profile ?? null);
   const [refreshing, setRefreshing] = useState(false);
   const [selectedPost, setSelectedPost] = useState<PerfilPost | null>(null);

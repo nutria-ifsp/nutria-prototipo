@@ -58,7 +58,7 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
       }
 
       setError('');
-      await register(email, password, username, name);
+      await register(email.trim(), password, username.trim(), name.trim());
       // Navigation happens automatically via AuthContext
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro ao registrar';

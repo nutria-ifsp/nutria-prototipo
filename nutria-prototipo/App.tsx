@@ -4,9 +4,9 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { RootStackParamList, MainTabParamList, PerfilStackParamList } from './src/types/navigation';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
+import { SettingsProvider, useSettings } from './src/context/SettingsContext';
 import OnboardingScreen from './src/screens/OnboardingScreen/OnboardingScreen';
 import FeedScreen from './src/screens/FeedScreen/FeedScreen';
-import { theme } from './src/styles/theme';
 import LoginScreen from 'screens/LoginScreen/LoginScreen';
 import RegisterScreen from 'screens/RegisterScreen/RegisterScreen';
 import { Ionicons } from '@expo/vector-icons';
@@ -32,10 +32,17 @@ function PerfilStackNavigator() {
 }
 
 function TabNavigator() {
+  const { theme } = useSettings();
+
   return (
    <Tab.Navigator
       screenOptions={{
         tabBarActiveTintColor: theme.colors.primary,
+        tabBarInactiveTintColor: theme.colors.textSubtitle,
+        tabBarStyle: {
+          backgroundColor: theme.colors.card,
+          borderTopColor: theme.colors.border,
+        },
         animation: 'shift',
       }}
     >
@@ -75,17 +82,44 @@ function TabNavigator() {
 
 function RootNavigator() {
   const { isLoggedIn, loading } = useAuth();
+  const { theme, loading: settingsLoading, darkMode } = useSettings();
+
+  if (settingsLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.colors.background }}>
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+      </View>
+    );
+  }
 
   if (loading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.colors.background }}>
         <ActivityIndicator size="large" color={theme.colors.primary} />
       </View>
     );
   }
 
   return (
-    <NavigationContainer>
+    <NavigationContainer
+      theme={{
+        dark: darkMode,
+        colors: {
+          primary: theme.colors.primary,
+          background: theme.colors.background,
+          card: theme.colors.card,
+          text: theme.colors.textStrong,
+          border: theme.colors.border,
+          notification: theme.colors.danger,
+        },
+        fonts: {
+          regular: { fontFamily: 'System', fontWeight: '400' },
+          medium: { fontFamily: 'System', fontWeight: '500' },
+          bold: { fontFamily: 'System', fontWeight: '700' },
+          heavy: { fontFamily: 'System', fontWeight: '800' },
+        },
+      }}
+    >
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {!isLoggedIn ? (
           <>
@@ -106,8 +140,10 @@ function RootNavigator() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <RootNavigator />
-    </AuthProvider>
+    <SettingsProvider>
+      <AuthProvider>
+        <RootNavigator />
+      </AuthProvider>
+    </SettingsProvider>
   );
 }

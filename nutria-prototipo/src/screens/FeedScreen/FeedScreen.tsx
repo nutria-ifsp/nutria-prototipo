@@ -1,10 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, Image, FlatList, TouchableOpacity, ScrollView, ImageBackground, Modal, Animated, Easing, Pressable, ActivityIndicator, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { theme } from '../../styles/theme';
-import { styles } from './FeedScreen.styles';
+import { createStyles } from './FeedScreen.styles';
 import * as api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
+import { useSettings } from '../../context/SettingsContext';
 
 const STORIES = [
   { id: '1', username: 'Seu Perfil', image: 'https://i.imgur.com/lOsEl90.png', isMe: true },
@@ -38,7 +38,8 @@ type FeedPost = {
 };
 
 const FeedScreen: React.FC = () => {
-  const { user } = useAuth();
+  const { theme } = useSettings();
+  const styles = createStyles(theme);
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -208,10 +209,10 @@ const FeedScreen: React.FC = () => {
         <Image source={{ uri: 'https://i.imgur.com/pPL5jeX.png' }} style={styles.headerLogo} resizeMode="contain" />
         <View style={styles.headerIcons}>
           <TouchableOpacity style={styles.iconBadge}>
-            <Ionicons name="search-outline" size={22} color="#333" />
+            <Ionicons name="search-outline" size={22} color={theme.colors.textStrong} />
           </TouchableOpacity>
           <TouchableOpacity style={styles.iconBadge}>
-            <Ionicons name="notifications-outline" size={22} color="#333" />
+            <Ionicons name="notifications-outline" size={22} color={theme.colors.textStrong} />
           </TouchableOpacity>
         </View>
       </View>
@@ -257,13 +258,13 @@ const FeedScreen: React.FC = () => {
             <View style={styles.postFooter}>
               <View style={styles.interactions}>
                 <TouchableOpacity onPress={() => handleLike(item.id)}>
-                  <Ionicons name={item.isLiked ? "heart" : "heart-outline"} size={28} color={item.isLiked ? theme.colors.danger : "#333"} />
+                  <Ionicons name={item.isLiked ? "heart" : "heart-outline"} size={28} color={item.isLiked ? theme.colors.danger : theme.colors.textStrong} />
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => openComments(item)}>
-                  <Ionicons name="chatbubble-outline" size={26} color="#333" />
+                  <Ionicons name="chatbubble-outline" size={26} color={theme.colors.textStrong} />
                 </TouchableOpacity>
                 <TouchableOpacity>
-                  <Ionicons name="paper-plane-outline" size={26} color="#333" />
+                  <Ionicons name="paper-plane-outline" size={26} color={theme.colors.textStrong} />
                 </TouchableOpacity>
               </View>
 

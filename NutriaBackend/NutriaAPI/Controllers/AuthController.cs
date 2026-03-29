@@ -38,9 +38,13 @@ namespace NutriaAPI.Controllers
                 return BadRequest(new { message = "Email, password, and username are required" });
             }
 
+            var normalizedEmail = request.Email.Trim().ToLowerInvariant();
+            var normalizedUsername = request.Username.Trim();
+            var normalizedName = request.Name?.Trim() ?? string.Empty;
+
             // Check if user already exists
             var existingUser = await _context.Users
-                .FirstOrDefaultAsync(u => u.Email == request.Email || u.Username == request.Username);
+                .FirstOrDefaultAsync(u => u.Email.Trim().ToLower() == normalizedEmail || u.Username.Trim().ToLower() == normalizedUsername.ToLower());
 
             if (existingUser != null)
             {
@@ -50,8 +54,8 @@ namespace NutriaAPI.Controllers
             // Create new user
             var user = new User
             {
-                Email = request.Email,
-                Username = request.Username,
+                Email = normalizedEmail,
+                Username = normalizedUsername,
                 PasswordHash = _authService.HashPassword(request.Password),
                 CreatedAt = DateTime.UtcNow
             };
@@ -63,7 +67,7 @@ namespace NutriaAPI.Controllers
             var profile = new Profile
             {
                 UserId = user.Id,
-                Name = request.Name,
+                Name = normalizedName,
                 Bio = "",
                 FollowersCount = 0,
                 FollowingCount = 0,
@@ -112,10 +116,12 @@ namespace NutriaAPI.Controllers
                 return BadRequest(new { message = "Email and password are required" });
             }
 
+            var normalizedEmail = request.Email.Trim().ToLowerInvariant();
+
             // Find user by email
             var user = await _context.Users
                 .Include(u => u.Profile)
-                .FirstOrDefaultAsync(u => u.Email == request.Email);
+                .FirstOrDefaultAsync(u => u.Email.Trim().ToLower() == normalizedEmail);
 
             if (user == null || !_authService.VerifyPassword(request.Password, user.PasswordHash))
             {

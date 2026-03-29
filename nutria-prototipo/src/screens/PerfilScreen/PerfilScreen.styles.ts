@@ -1,12 +1,15 @@
 import { StyleSheet, Dimensions } from 'react-native';
-import { theme } from '../../styles/theme';
+import { darkTheme, lightTheme } from '../../styles/theme';
 
 const { width } = Dimensions.get('window');
 
-export const styles = StyleSheet.create({
+type AppTheme = typeof lightTheme | typeof darkTheme;
+
+export const createStyles = (theme: AppTheme) =>
+  StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: theme.colors.background,
   },
   header: {
     flexDirection: 'row',
@@ -15,7 +18,9 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 55,
     paddingBottom: 15,
-    backgroundColor: '#FFF',
+    backgroundColor: theme.colors.card,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.border,
     elevation: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -31,7 +36,7 @@ export const styles = StyleSheet.create({
     gap: 15,
   },
   iconBadge: {
-    backgroundColor: '#F0F0F0',
+    backgroundColor: theme.colors.iconSurface,
     padding: 8,
     borderRadius: 12,
   },
@@ -40,7 +45,7 @@ export const styles = StyleSheet.create({
     paddingBottom: 30,
   },
   profileCard: {
-    backgroundColor: '#FFF',
+    backgroundColor: theme.colors.card,
     borderRadius: 20,
     padding: 16,
     flexDirection: 'row',
@@ -56,7 +61,7 @@ export const styles = StyleSheet.create({
     height: 84,
     borderRadius: 42,
     borderWidth: 2,
-    borderColor: '#EEE',
+    borderColor: theme.colors.border,
   },
   profileInfo: {
     flex: 1,
@@ -71,12 +76,12 @@ export const styles = StyleSheet.create({
   handle: {
     fontSize: 13,
     fontWeight: '500',
-    color: '#7A7A7A',
+    color: theme.colors.textSubtitle,
     marginTop: 2,
   },
   bio: {
     fontSize: 13,
-    color: '#4E4E4E',
+    color: theme.colors.textSubtitle,
     marginTop: 8,
     lineHeight: 18,
   },
@@ -88,7 +93,9 @@ export const styles = StyleSheet.create({
   },
   metricCard: {
     flex: 1,
-    backgroundColor: '#FFF',
+    backgroundColor: theme.colors.card,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
     borderRadius: 16,
     paddingVertical: 14,
     alignItems: 'center',
@@ -105,11 +112,11 @@ export const styles = StyleSheet.create({
   },
   metricLabel: {
     fontSize: 12,
-    color: '#767676',
+    color: theme.colors.textSubtitle,
     marginTop: 4,
   },
   sectionCard: {
-    backgroundColor: '#FFF',
+    backgroundColor: theme.colors.card,
     borderRadius: 20,
     padding: 16,
     marginBottom: 12,
@@ -147,18 +154,18 @@ export const styles = StyleSheet.create({
   goalTitle: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#444',
+    color: theme.colors.textSubtitle,
   },
   goalValue: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#2D2D2D',
+    color: theme.colors.textStrong,
   },
   goalTrack: {
     width: '100%',
     height: 8,
     borderRadius: 99,
-    backgroundColor: '#ECECEC',
+    backgroundColor: theme.colors.border,
     overflow: 'hidden',
   },
   goalProgress: {
@@ -169,10 +176,10 @@ export const styles = StyleSheet.create({
   actionRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FAFAFA',
+    backgroundColor: theme.colors.mutedBackground,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#EFEFEF',
+    borderColor: theme.colors.border,
     paddingHorizontal: 12,
     paddingVertical: 12,
     marginTop: 10,
@@ -186,23 +193,23 @@ export const styles = StyleSheet.create({
   },
   postCard: {
     marginTop: 12,
-    backgroundColor: '#FAFAFA',
+    backgroundColor: theme.colors.mutedBackground,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#EFEFEF',
+    borderColor: theme.colors.border,
     overflow: 'hidden',
   },
   postImage: {
     width: '100%',
     height: 180,
-    backgroundColor: '#EEE',
+    backgroundColor: theme.colors.lightGray,
   },
   postFooter: {
     padding: 12,
   },
   postCaption: {
     fontSize: 14,
-    color: '#333',
+    color: theme.colors.textSubtitle,
     lineHeight: 20,
   },
   postMetaRow: {
@@ -242,7 +249,7 @@ export const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.32)',
   },
   modalSheet: {
-    backgroundColor: '#FFF',
+    backgroundColor: theme.colors.card,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 18,
@@ -265,19 +272,19 @@ export const styles = StyleSheet.create({
     marginTop: 10,
     padding: 12,
     borderRadius: 12,
-    backgroundColor: '#FAFAFA',
+    backgroundColor: theme.colors.mutedBackground,
     borderWidth: 1,
-    borderColor: '#EFEFEF',
+    borderColor: theme.colors.border,
   },
   commentUser: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#2D2D2D',
+    color: theme.colors.textStrong,
     marginBottom: 4,
   },
   commentText: {
     fontSize: 14,
-    color: '#4A4A4A',
+    color: theme.colors.textSubtitle,
     lineHeight: 19,
   },
 });

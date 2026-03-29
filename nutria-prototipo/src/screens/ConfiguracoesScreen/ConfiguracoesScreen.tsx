@@ -1,14 +1,32 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Switch } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, Switch, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { theme } from '../../styles/theme';
-import { styles } from './ConfiguracoesScreen.styles';
+import { createStyles } from './ConfiguracoesScreen.styles';
 import { StackScreenProps } from '@react-navigation/stack';
 import { PerfilStackParamList } from '../../types/navigation';
+import { useAuth } from '../../context/AuthContext';
+import { useSettings } from '../../context/SettingsContext';
 
 type Props = StackScreenProps<PerfilStackParamList, 'Configuracoes'>;
 
 const ConfiguracoesScreen: React.FC<Props> = ({ navigation }) => {
+  const { logout } = useAuth();
+  const { theme, darkMode, setDarkMode } = useSettings();
+  const styles = createStyles(theme);
+
+  const handleLogout = () => {
+    Alert.alert('Sair da conta', 'Tem certeza que deseja sair da sua conta?', [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Sair',
+        style: 'destructive',
+        onPress: async () => {
+          await logout();
+        },
+      },
+    ]);
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -17,7 +35,7 @@ const ConfiguracoesScreen: React.FC<Props> = ({ navigation }) => {
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Configuracoes</Text>
         <TouchableOpacity style={styles.iconBadge}>
-          <Ionicons name="help-circle-outline" size={22} color="#333" />
+          <Ionicons name="help-circle-outline" size={22} color={theme.colors.textStrong} />
         </TouchableOpacity>
       </View>
 
@@ -62,6 +80,19 @@ const ConfiguracoesScreen: React.FC<Props> = ({ navigation }) => {
             </View>
             <Switch value={false} thumbColor="#FFF" trackColor={{ false: '#D6D6D6', true: theme.colors.primary }} />
           </View>
+
+          <View style={styles.switchRow}>
+            <View style={styles.switchLabelGroup}>
+              <Ionicons name="moon-outline" size={20} color={theme.colors.textStrong} />
+              <Text style={styles.optionText}>Modo escuro</Text>
+            </View>
+            <Switch
+              value={darkMode}
+              onValueChange={setDarkMode}
+              thumbColor="#FFF"
+              trackColor={{ false: '#D6D6D6', true: theme.colors.primary }}
+            />
+          </View>
         </View>
 
         <View style={styles.sectionCard}>
@@ -80,7 +111,7 @@ const ConfiguracoesScreen: React.FC<Props> = ({ navigation }) => {
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity style={styles.logoutButton}>
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <Ionicons name="log-out-outline" size={20} color="#FFF" />
           <Text style={styles.logoutText}>Sair da conta</Text>
         </TouchableOpacity>
