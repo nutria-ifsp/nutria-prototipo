@@ -1,10 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, Image, FlatList, TouchableOpacity, ScrollView, ImageBackground, Modal, Animated, Easing, Pressable, ActivityIndicator, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 import { createStyles } from './FeedScreen.styles';
 import * as api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../context/SettingsContext';
+import { RootStackParamList } from '../../types/navigation';
 
 const STORIES = [
   { id: '1', username: 'Seu Perfil', image: 'https://i.imgur.com/lOsEl90.png', isMe: true },
@@ -40,6 +43,7 @@ type FeedPost = {
 const FeedScreen: React.FC = () => {
   const { theme } = useSettings();
   const styles = createStyles(theme);
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -71,15 +75,15 @@ const FeedScreen: React.FC = () => {
       // Convert API response to FeedPost format
       const convertedPosts: FeedPost[] = response.posts.map((post: any) => ({
         id: post.id.toString(),
-        username: post.user?.username || 'Unknown',
-        userImage: post.user?.profile?.avatarUrl || 'https://randomuser.me/api/portraits/women/1.jpg',
+        username: post.author?.username || 'Unknown',
+        userImage: post.author?.profile?.avatarUrl || 'https://randomuser.me/api/portraits/women/1.jpg',
         postImage: post.imageUrl,
-        streak: post.user?.profile?.streak || 0,
+        streak: post.author?.profile?.streak || 0,
         likes: post.likesCount,
         caption: post.caption,
-        isLiked: false,
+        isLiked: !!post.isLikedByCurrentUser,
         comments: [],
-        userId: post.userId,
+        userId: post.author?.id || 0,
         likesCount: post.likesCount,
         commentsCount: post.commentsCount,
       }));
@@ -282,6 +286,10 @@ const FeedScreen: React.FC = () => {
           </View>
         )}
       />
+
+      <TouchableOpacity style={styles.fab} onPress={() => navigation.navigate('CreatePost')}>
+        <Ionicons name="add" size={28} color="#FFF" />
+      </TouchableOpacity>
 
       <Modal
         visible={isCommentsVisible}

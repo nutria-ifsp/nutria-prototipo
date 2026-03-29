@@ -72,25 +72,28 @@ export interface ProfileDto {
 
 export interface PostDto {
   id: number;
-  userId: number;
   caption: string;
   imageUrl: string;
   likesCount: number;
   commentsCount: number;
   createdAt: string;
-  user: {
+  author?: {
+    id: number;
     username: string;
-    profile: {
+    profile?: {
       name: string;
       avatarUrl?: string;
+      streak?: number;
     };
   };
+  isLikedByCurrentUser?: boolean;
 }
 
 export interface FeedResponse {
   posts: PostDto[];
   totalCount: number;
-  hasMore: boolean;
+  page: number;
+  pageSize: number;
 }
 
 export interface CreatePostRequest {

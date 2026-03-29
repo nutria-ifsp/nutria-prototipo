@@ -14,13 +14,16 @@ import {
 } from 'react-native';
 import { StackScreenProps } from '@react-navigation/stack';
 import { RootStackParamList } from '../../types/navigation';
-import { theme } from '../../styles/theme';
+import { darkTheme, lightTheme } from '../../styles/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../context/AuthContext';
+import { useSettings } from '../../context/SettingsContext';
 
 type Props = StackScreenProps<RootStackParamList, 'Register'>;
 
 const RegisterScreen: React.FC<Props> = ({ navigation }) => {
+  const { theme } = useSettings();
+  const styles = createStyles(theme);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
@@ -191,7 +194,9 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+type AppTheme = typeof lightTheme | typeof darkTheme;
+
+const createStyles = (theme: AppTheme) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
@@ -254,7 +259,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 18,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
+    borderColor: theme.colors.border,
   },
   nextButton: {
     backgroundColor: theme.colors.primary,

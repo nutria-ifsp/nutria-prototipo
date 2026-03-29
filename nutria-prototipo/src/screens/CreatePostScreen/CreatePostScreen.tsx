@@ -17,17 +17,20 @@ import {
 } from 'react-native';
 import { StackScreenProps } from '@react-navigation/stack';
 import { RootStackParamList } from '../../types/navigation';
-import { theme } from '../../styles/theme';
+import { darkTheme, lightTheme } from '../../styles/theme';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import * as api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
+import { useSettings } from '../../context/SettingsContext';
 
 type Props = StackScreenProps<RootStackParamList, 'CreatePost'> & {
   navigation: any;
 };
 
 const CreatePostScreen: React.FC<Props> = ({ navigation }) => {
+  const { theme } = useSettings();
+  const styles = createStyles(theme);
   const { user } = useAuth();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [caption, setCaption] = useState('');
@@ -211,7 +214,9 @@ const CreatePostScreen: React.FC<Props> = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+type AppTheme = typeof lightTheme | typeof darkTheme;
+
+const createStyles = (theme: AppTheme) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
@@ -223,7 +228,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    borderBottomColor: theme.colors.border,
   },
   headerTitle: {
     fontSize: 18,
@@ -241,7 +246,7 @@ const styles = StyleSheet.create({
   imageContainer: {
     position: 'relative',
     height: 300,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: theme.colors.lightGray,
   },
   selectedImage: {
     width: '100%',
@@ -266,7 +271,7 @@ const styles = StyleSheet.create({
   },
   imagePlaceholder: {
     height: 300,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: theme.colors.lightGray,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
@@ -298,7 +303,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    borderBottomColor: theme.colors.border,
   },
   userAvatar: {
     width: 48,
@@ -330,7 +335,7 @@ const styles = StyleSheet.create({
   tipsContainer: {
     margin: 16,
     padding: 12,
-    backgroundColor: '#f0f8ff',
+    backgroundColor: theme.colors.mutedBackground,
     borderRadius: 8,
     borderLeftWidth: 4,
     borderLeftColor: theme.colors.primary,

@@ -14,12 +14,15 @@ import {
 } from 'react-native';
 import { StackScreenProps } from '@react-navigation/stack';
 import { RootStackParamList } from '../../types/navigation';
-import { theme } from '../../styles/theme';
+import { darkTheme, lightTheme } from '../../styles/theme';
 import { useAuth } from '../../context/AuthContext';
+import { useSettings } from '../../context/SettingsContext';
 
 type Props = StackScreenProps<RootStackParamList, 'Login'>;
 
 const LoginScreen: React.FC<Props> = ({ navigation }) => {
+  const { theme } = useSettings();
+  const styles = createStyles(theme);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -123,7 +126,9 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+type AppTheme = typeof lightTheme | typeof darkTheme;
+
+const createStyles = (theme: AppTheme) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
@@ -178,7 +183,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
+    borderColor: theme.colors.border,
   },
   forgotPass: {
     alignSelf: 'flex-end',
