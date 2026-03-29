@@ -106,6 +106,7 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
           <TextInput
             style={styles.input}
             placeholder="Digite seu nome"
+            placeholderTextColor={theme.colors.textSubtitle}
             value={name}
             onChangeText={(text) => {
               setName(text);
@@ -118,6 +119,7 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
           <TextInput
             style={styles.input}
             placeholder="seu@email.com"
+            placeholderTextColor={theme.colors.textSubtitle}
             value={email}
             onChangeText={(text) => {
               setEmail(text);
@@ -132,6 +134,7 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
           <TextInput
             style={styles.input}
             placeholder="seu_usuario"
+            placeholderTextColor={theme.colors.textSubtitle}
             value={username}
             onChangeText={(text) => {
               setUsername(text.replace(/\s/g, ''));
@@ -145,6 +148,7 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
           <TextInput
             style={styles.input}
             placeholder="Mínimo 6 caracteres"
+            placeholderTextColor={theme.colors.textSubtitle}
             value={password}
             onChangeText={(text) => {
               setPassword(text);
@@ -158,6 +162,7 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
           <TextInput
             style={styles.input}
             placeholder="Repita a senha"
+            placeholderTextColor={theme.colors.textSubtitle}
             value={confirmPassword}
             onChangeText={(text) => {
               setConfirmPassword(text);
@@ -257,6 +262,7 @@ const createStyles = (theme: AppTheme) => StyleSheet.create({
     borderRadius: theme.spacing.borderRadius,
     padding: 15,
     fontSize: 16,
+    color: theme.colors.textStrong,
     marginBottom: 18,
     borderWidth: 1,
     borderColor: theme.colors.border,

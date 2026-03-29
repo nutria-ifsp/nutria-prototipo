@@ -102,8 +102,23 @@ export interface CreatePostRequest {
 }
 
 export interface FollowResponse {
-  message: string;
+  isFollowing: boolean;
   followersCount: number;
+}
+
+export interface CommentDto {
+  id: number;
+  text: string;
+  createdAt: string;
+  author?: {
+    id: number;
+    username: string;
+    profile?: {
+      id: number;
+      name: string;
+      avatarUrl?: string;
+    };
+  };
 }
 
 // ========== HELPER FUNCTIONS ==========
@@ -247,6 +262,20 @@ export async function deleteComment(commentId: number): Promise<void> {
   return request<void>(`/interactions/comments/${commentId}`, 'DELETE');
 }
 
+/**
+ * Get comments for a post
+ */
+export async function getPostComments(postId: number, page = 1, pageSize = 20): Promise<CommentDto[]> {
+  return request<CommentDto[]>(`/interactions/comments/post/${postId}?page=${page}&pageSize=${pageSize}`, 'GET');
+}
+
+/**
+ * Get posts from a specific user
+ */
+export async function getUserPosts(userId: number, page = 1, pageSize = 20): Promise<FeedResponse> {
+  return request<FeedResponse>(`/posts/user/${userId}?page=${page}&pageSize=${pageSize}`, 'GET');
+}
+
 // ========== FOLLOWS ==========
 
 /**
@@ -259,8 +288,15 @@ export async function followUser(userId: number): Promise<FollowResponse> {
 /**
  * Unfollow a user
  */
-export async function unfollowUser(userId: number): Promise<{ message: string }> {
-  return request<{ message: string }>(`/follow/${userId}`, 'DELETE');
+export async function unfollowUser(userId: number): Promise<FollowResponse> {
+  return request<FollowResponse>(`/follow/${userId}`, 'DELETE');
+}
+
+/**
+ * Check if current user follows a target user
+ */
+export async function isFollowingUser(userId: number): Promise<FollowResponse> {
+  return request<FollowResponse>(`/follow/${userId}/following`, 'GET');
 }
 
 // ========== PROFILE ==========
@@ -270,6 +306,13 @@ export async function unfollowUser(userId: number): Promise<{ message: string }>
  */
 export async function getProfile(): Promise<ProfileDto> {
   return request<ProfileDto>('/profile/me', 'GET');
+}
+
+/**
+ * Get a user's profile by username
+ */
+export async function getProfileByUsername(username: string): Promise<ProfileDto> {
+  return request<ProfileDto>(`/profile/username/${encodeURIComponent(username)}`, 'GET');
 }
 
 /**
@@ -301,5 +344,9 @@ export default {
   followUser,
   unfollowUser,
   getProfile,
+  getProfileByUsername,
   updateProfile,
+  isFollowingUser,
+  getPostComments,
+  getUserPosts,
 };

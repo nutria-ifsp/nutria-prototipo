@@ -15,6 +15,7 @@ import PerfilScreen from 'screens/PerfilScreen/PerfilScreen';
 import ConfiguracoesScreen from 'screens/ConfiguracoesScreen/ConfiguracoesScreen';
 import EditarPerfilScreen from 'screens/EditarPerfilScreen/EditarPerfilScreen';
 import CreatePostScreen from 'screens/CreatePostScreen/CreatePostScreen';
+import UserProfileScreen from 'screens/UserProfileScreen/UserProfileScreen';
 import { View, ActivityIndicator } from 'react-native';
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -131,6 +132,7 @@ function RootNavigator() {
           <>
             <Stack.Screen name="MainTabs" component={TabNavigator} />
             <Stack.Screen name="CreatePost" component={CreatePostScreen} />
+            <Stack.Screen name="UserProfile" component={UserProfileScreen} />
           </>
         )}
       </Stack.Navigator>

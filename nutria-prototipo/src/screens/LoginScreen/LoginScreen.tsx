@@ -75,6 +75,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
           <TextInput
             style={styles.input}
             placeholder="exemplo@email.com"
+            placeholderTextColor={theme.colors.textSubtitle}
             value={email}
             onChangeText={(text) => {
               setEmail(text);
@@ -89,6 +90,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
           <TextInput
             style={styles.input}
             placeholder="Sua senha"
+            placeholderTextColor={theme.colors.textSubtitle}
             value={password}
             onChangeText={(text) => {
               setPassword(text);
@@ -181,6 +183,7 @@ const createStyles = (theme: AppTheme) => StyleSheet.create({
     borderRadius: theme.spacing.borderRadius,
     padding: 16,
     fontSize: 16,
+    color: theme.colors.textStrong,
     marginBottom: 20,
     borderWidth: 1,
     borderColor: theme.colors.border,

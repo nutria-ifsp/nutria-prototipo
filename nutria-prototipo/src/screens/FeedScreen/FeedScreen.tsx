@@ -1,11 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, Image, FlatList, TouchableOpacity, ScrollView, ImageBackground, Modal, Animated, Easing, Pressable, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, Image, FlatList, TouchableOpacity, ScrollView, ImageBackground, Modal, Animated, Easing, Pressable, ActivityIndicator, Alert, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { createStyles } from './FeedScreen.styles';
 import * as api from '../../services/api';
-import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../context/SettingsContext';
 import { RootStackParamList } from '../../types/navigation';
 
@@ -49,6 +48,13 @@ const FeedScreen: React.FC = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [selectedPost, setSelectedPost] = useState<FeedPost | null>(null);
   const [isCommentsVisible, setIsCommentsVisible] = useState(false);
+  const [comments, setComments] = useState<api.CommentDto[]>([]);
+  const [commentsLoading, setCommentsLoading] = useState(false);
+  const [commentsPage, setCommentsPage] = useState(1);
+  const [commentsLoadingMore, setCommentsLoadingMore] = useState(false);
+  const [commentsHasMore, setCommentsHasMore] = useState(true);
+  const [commentInput, setCommentInput] = useState('');
+  const [sendingComment, setSendingComment] = useState(false);
   const modalProgress = useRef(new Animated.Value(0)).current;
   const currentAnimation = useRef<Animated.CompositeAnimation | null>(null);
   const isClosing = useRef(false);
@@ -138,14 +144,16 @@ const FeedScreen: React.FC = () => {
         return;
       }
 
-      await api.addComment(parseInt(postId), commentText);
-      
-      // Reload feed to get updated comments
-      await loadFeed();
-      closeComments();
+      setSendingComment(true);
+      await api.addComment(parseInt(postId), commentText.trim());
+      setCommentInput('');
+
+      await Promise.all([loadFeed(), loadComments(postId, 1)]);
     } catch (error) {
       console.error('Failed to add comment:', error);
       Alert.alert('Erro', 'Não foi possível adicionar o comentário.');
+    } finally {
+      setSendingComment(false);
     }
   };
 
@@ -164,10 +172,53 @@ const FeedScreen: React.FC = () => {
     });
   };
 
+  const loadComments = async (postId: string, pageNum: number = 1) => {
+    try {
+      const pageToLoad = pageNum === 1 ? 1 : commentsPage;
+      if (pageNum === 1) {
+        setCommentsLoading(true);
+        setCommentsPage(1);
+      } else {
+        setCommentsLoadingMore(true);
+      }
+
+      const data = await api.getPostComments(parseInt(postId), pageToLoad, 15);
+      
+      if (pageNum === 1) {
+        setComments(data);
+      } else {
+        setComments(prev => [...prev, ...data]);
+      }
+
+      setCommentsHasMore(data.length === 15);
+      if (pageNum === 1) {
+        setCommentsPage(2);
+      } else {
+        setCommentsPage(prev => prev + 1);
+      }
+    } catch (error) {
+      console.error('Failed to load comments:', error);
+      if (pageNum === 1) {
+        Alert.alert('Erro', 'Não foi possível carregar comentários.');
+      }
+    } finally {
+      if (pageNum === 1) {
+        setCommentsLoading(false);
+      } else {
+        setCommentsLoadingMore(false);
+      }
+    }
+  };
+
   const openComments = (post: FeedPost) => {
     isClosing.current = false;
     setSelectedPost(post);
+    setComments([]);
+    setCommentInput('');
+    setCommentsPage(1);
+    setCommentsHasMore(true);
     setIsCommentsVisible(true);
+    loadComments(post.id, 1);
   };
 
   const closeComments = () => {
@@ -248,10 +299,13 @@ const FeedScreen: React.FC = () => {
         renderItem={({ item }) => (
           <View style={styles.postCard}>
             <View style={styles.postHeader}>
-              <View style={styles.userInfo}>
+              <TouchableOpacity
+                style={styles.userInfo}
+                onPress={() => navigation.navigate('UserProfile', { userId: item.userId, username: item.username })}
+              >
                 <Image source={{ uri: item.userImage }} style={styles.userAvatar} />
                 <Text style={styles.username}>{item.username}</Text>
-              </View>
+              </TouchableOpacity>
               <ImageBackground source={{ uri: 'https://i.imgur.com/gBaznSm.png' }} style={styles.streakBadge}>
                 <Text style={styles.streakText}>{item.streak}</Text>
               </ImageBackground>
@@ -310,16 +364,61 @@ const FeedScreen: React.FC = () => {
               </TouchableOpacity>
             </View>
 
-            {selectedPost?.comments && selectedPost.comments.length > 0 ? (
-              selectedPost.comments.map((comment) => (
-                <View key={comment.id} style={styles.commentItem}>
-                  <Text style={styles.commentUser}>{comment.username}</Text>
-                  <Text style={styles.commentText}>{comment.text}</Text>
-                </View>
-              ))
+            {commentsLoading ? (
+              <View style={styles.commentStateWrap}>
+                <ActivityIndicator size="small" color={theme.colors.primary} />
+              </View>
+            ) : comments.length > 0 ? (
+              <>
+                <FlatList
+                  data={comments}
+                  keyExtractor={(item) => item.id.toString()}
+                  renderItem={({ item }) => (
+                    <View style={styles.commentItem}>
+                      <Text style={styles.commentUser}>{item.author?.username ?? 'user'}</Text>
+                      <Text style={styles.commentText}>{item.text}</Text>
+                    </View>
+                  )}
+                  scrollEnabled={true}
+                  nestedScrollEnabled={true}
+                  onEndReached={() => {
+                    if (commentsHasMore && !commentsLoadingMore && selectedPost) {
+                      loadComments(selectedPost.id, 2);
+                    }
+                  }}
+                  onEndReachedThreshold={0.5}
+                  ListFooterComponent={
+                    commentsLoadingMore ? (
+                      <View style={styles.commentStateWrap}>
+                        <ActivityIndicator size="small" color={theme.colors.primary} />
+                      </View>
+                    ) : null
+                  }
+                  style={styles.commentsList}
+                  showsVerticalScrollIndicator={false}
+                />
+              </>
             ) : (
               <Text style={{ padding: 16, color: theme.colors.textSubtitle }}>Nenhum comentário ainda</Text>
             )}
+
+            <View style={styles.commentComposerRow}>
+              <TextInput
+                style={styles.commentComposerInput}
+                value={commentInput}
+                onChangeText={setCommentInput}
+                placeholder="Escreva um comentário..."
+                placeholderTextColor={theme.colors.textSubtitle}
+                editable={!sendingComment}
+              />
+              <TouchableOpacity
+                style={[styles.commentSendBtn, { opacity: sendingComment ? 0.6 : 1 }]}
+                onPress={() => selectedPost && handleComment(selectedPost.id, commentInput)}
+                disabled={sendingComment}
+              >
+                <Ionicons name="send" size={18} color="#FFF" />
+              </TouchableOpacity>
+            </View>
           </Animated.View>
         </View>
       </Modal>

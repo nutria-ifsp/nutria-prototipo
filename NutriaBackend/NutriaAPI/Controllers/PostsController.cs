@@ -19,12 +19,13 @@ namespace NutriaAPI.Controllers
         }
 
         /// <summary>
-        /// Get feed for the current user (posts from followed accounts + own posts).
+        /// Get feed for the current user (all posts from all users).
         /// Frontend calls: GET /api/posts/feed?page=1&pageSize=10
-        /// Returns: paginated list of posts
+        /// Returns: paginated list of all posts
         /// 
         /// Pagination: Instead of loading all 10,000 posts at once, we load 10 per request.
         /// This keeps the app fast and reduces data transfer.
+        /// Note: Development phase - shows all posts to all users. Filter by follow relationships later.
         /// </summary>
         [HttpGet("feed")]
         [Authorize]
@@ -40,21 +41,11 @@ namespace NutriaAPI.Controllers
             page = Math.Max(1, page);
             pageSize = Math.Min(50, Math.Max(1, pageSize));
 
-            // Get list of users the current user follows (including self)
-            var followedUserIds = await _context.Follows
-                .Where(f => f.FollowerId == userId)
-                .Select(f => f.FollowingId)
-                .ToListAsync();
-
-            followedUserIds.Add(userId!.Value); // Include own posts
-
-            // Get posts from followed users, ordered by newest first
+            // Get all posts (development phase: show all posts to all users)
             var totalCount = await _context.Posts
-                .Where(p => followedUserIds.Contains(p.UserId))
                 .CountAsync();
 
             var posts = await _context.Posts
-                .Where(p => followedUserIds.Contains(p.UserId))
                 .Include(p => p.Profile)
                 .ThenInclude(pr => pr!.User)
                 .OrderByDescending(p => p.CreatedAt)
