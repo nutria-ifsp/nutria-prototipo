@@ -1,0 +1,58 @@
+# Build results
+bin/
+obj/
+Debug/
+Release/
+
+# IDE files
+.vscode/
+.idea/
+*.sln.iml
+.DS_Store
+*.swp
+*.swo
+*~
+
+# Visual Studio
+.vs/
+*.user
+*.userchoices
+*.suo
+*.userosscache
+
+# NuGet
+*.nupkg
+*.snupkg
+
+# Local environment files (secrets, connection strings)
+appsettings.local.json
+appsettings.*.local.json
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Node (if using npm)
+node_modules/
+package-lock.json
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# EF Core migrations (optional to commit)
+Migrations/
+
+# Dependencies
+.nuget/
+
+# Rider
+.idea/
+*.sln.iml
