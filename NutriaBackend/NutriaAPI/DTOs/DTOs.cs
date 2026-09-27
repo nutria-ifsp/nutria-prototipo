@@ -166,4 +166,49 @@ namespace NutriaAPI.DTOs
     {
         public float CurrentValue { get; set; }
     }
+
+    // ============= MEAL AI ANALYSIS DTOs =============
+
+    /// <summary>
+    /// What the frontend sends to analyze a meal photo.
+    /// ImageBase64 should NOT include the "data:image/jpeg;base64," prefix.
+    /// </summary>
+    public class AnalyzeMealRequest
+    {
+        public string ImageBase64 { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Optional hint from the user, e.g. "almoço", "sem o refrigerante".
+        /// </summary>
+        public string? Note { get; set; }
+    }
+
+    /// <summary>
+    /// A single food item identified within the photo.
+    /// </summary>
+    public class MealItemDto
+    {
+        public string Name { get; set; } = string.Empty;
+        public float EstimatedGrams { get; set; }
+        public int Calories { get; set; }
+    }
+
+    /// <summary>
+    /// What the API returns after analyzing a meal photo:
+    /// estimated calories/macros plus the individual items identified.
+    /// </summary>
+    public class MealAnalysisResponse
+    {
+        public string Description { get; set; } = string.Empty;
+        public int Calories { get; set; }
+        public float ProteinGrams { get; set; }
+        public float CarbsGrams { get; set; }
+        public float FatGrams { get; set; }
+
+        /// <summary>
+        /// 0.0 to 1.0 — how confident the model is in this estimate.
+        /// </summary>
+        public float Confidence { get; set; }
+        public List<MealItemDto> Items { get; set; } = new();
+    }
 }
