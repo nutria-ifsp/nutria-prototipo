@@ -341,6 +341,13 @@ const FeedScreen: React.FC = () => {
         )}
       />
 
+      <TouchableOpacity
+        style={styles.aiFab}
+        onPress={() => navigation.navigate('AnalisarRefeicao')}
+      >
+        <Ionicons name="sparkles" size={24} color="#FFF" />
+      </TouchableOpacity>
+
       <TouchableOpacity style={styles.fab} onPress={() => navigation.navigate('CreatePost')}>
         <Ionicons name="add" size={28} color="#FFF" />
       </TouchableOpacity>

@@ -327,6 +327,34 @@ export async function updateProfile(data: {
   return request<ProfileDto>('/profile/me', 'PUT', data);
 }
 
+// ========== AI MEAL ANALYSIS ==========
+
+export interface MealItemDto {
+  name: string;
+  estimatedGrams: number;
+  calories: number;
+}
+
+export interface MealAnalysisResult {
+  description: string;
+  calories: number;
+  proteinGrams: number;
+  carbsGrams: number;
+  fatGrams: number;
+  confidence: number;
+  items: MealItemDto[];
+}
+
+/**
+ * Send a meal photo (base64, no data URI prefix) to the AI for calorie/macro analysis.
+ */
+export async function analyzeMeal(imageBase64: string, note?: string): Promise<MealAnalysisResult> {
+  return request<MealAnalysisResult>('/mealanalysis/analyze', 'POST', {
+    imageBase64,
+    note,
+  });
+}
+
 export default {
   register,
   login,
@@ -349,4 +377,5 @@ export default {
   isFollowingUser,
   getPostComments,
   getUserPosts,
+  analyzeMeal,
 };

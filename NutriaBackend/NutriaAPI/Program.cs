@@ -44,6 +44,8 @@ builder.Services
 // ========== SETUP SERVICES ==========
 // Register our custom services
 builder.Services.AddScoped<IAuthService, AuthService>();
+// Meal photo analysis via AI (OpenAI vision). Needs OpenAI:ApiKey configured.
+builder.Services.AddHttpClient<IMealAnalysisService, MealAnalysisService>();
 
 // Add controllers and API exploration
 builder.Services.AddControllers();
